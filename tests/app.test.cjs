@@ -5,7 +5,7 @@ const { createHash, webcrypto } = require('node:crypto');
 const vm = require('node:vm');
 
 const html = readFileSync(require('node:path').join(__dirname, '../index.html'), 'utf8');
-const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+const script = html.match(/<script>([\s\S]*?)<\/script>/)[1].replace(/\r\n?/g, '\n');
 
 // ブラウザ専用 API には触れず、公開されたタスク操作と描画内容を検証する。
 function app(options = {}) {

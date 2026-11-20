@@ -15,7 +15,7 @@
       "title": "Task Tree",
       "width": 640,
       "height": 720,
-      "minWidth": 360,
+      "minWidth": 280,
       "minHeight": 300,
       "dragDropEnabled": false,
       "backgroundColor": "#fcfaf7"

@@ -1,0 +1,3 @@
+* text=auto eol=lf
+# 第三者のライセンス本文は配布元の空白・改行を維持する。
+third-party/** -text -whitespace

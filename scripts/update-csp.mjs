@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 
 // HTML 内のスクリプトを変更した後に実行し、許可するコードのハッシュを更新する。
 const path = new URL('../index.html', import.meta.url);
-let html = readFileSync(path, 'utf8');
+let html = readFileSync(path, 'utf8').replace(/\r\n?/g, '\n');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 if (!script) throw new Error('スクリプトが見つかりません');
 const hash = createHash('sha256').update(script).digest('base64');
