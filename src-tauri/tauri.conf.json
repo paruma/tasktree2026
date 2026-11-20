@@ -18,6 +18,7 @@
       "minWidth": 280,
       "minHeight": 300,
       "dragDropEnabled": false,
+      "zoomHotkeysEnabled": true,
       "backgroundColor": "#fcfaf7"
     }],
     "security": {
