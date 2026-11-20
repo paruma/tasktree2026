@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l6js9MIg0q4j/IdAdWQael+XfXwxGXWjcdNSWzKLRxs='; script-src-attr 'none'; style-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Task Tree</title>
+<style>
+:root{font-family:Inter,"Noto Sans JP",system-ui,sans-serif;color:#39342f;background:#fcfaf7;--orange:#e78032;--line:#ede5db}*{box-sizing:border-box}body{margin:0}main{max-width:620px;margin:70px auto;padding:0 28px}header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;gap:20px}h1{font-size:23px;letter-spacing:-.7px;margin:0;font-weight:650}.brand{display:flex;gap:12px;align-items:center}.logo{color:var(--orange);font-size:29px}.total{text-align:right;font-size:28px;font-weight:600;font-variant-numeric:tabular-nums}.total small{display:block;font-size:11px;color:#998e81;font-weight:400;margin-bottom:3px}.tools{display:flex;align-items:center;gap:7px;margin-bottom:16px}button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit;border-radius:6px;padding:7px 10px}button:hover{background:#f1e9df}button:disabled{opacity:.3;cursor:default}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--orange);outline-offset:2px}.primary{background:#f7e7d7;color:#a64e14}.spacer{flex:1}.subtle{color:#93897e;font-size:12px}.row{position:relative;display:flex;align-items:center;gap:9px;min-height:40px;padding:2px 8px 2px calc(8px + var(--depth)*27px);border-bottom:1px solid var(--line);background:#fffdf9}.row:first-child{border-top:1px solid var(--line)}.row:focus-within{background:#fff7ed}.handle{cursor:grab;color:#b5a99b;padding:5px 2px;touch-action:none}.handle:active{cursor:grabbing}.status{flex:none;width:20px;height:20px;border:2px solid var(--orange);border-radius:50%;padding:0;position:relative}.status:hover{background-color:#ffecd9}.status.doing{background:linear-gradient(90deg,var(--orange) 50%,transparent 50%)}.status.done{background:var(--orange);color:white}.status.done:after{content:'✓';position:absolute;inset:-2px;font-size:14px;line-height:20px;text-align:center}.status:disabled{opacity:1}.name{border:0;background:transparent;font:inherit;font-size:14px;color:inherit;min-width:20px;flex:1;padding:5px 0;outline:none!important}.row.completed .name{color:#a99d90}.time{width:65px;border:1px solid transparent;background:transparent;text-align:right;font:inherit;font-size:13px;color:#8a7765;padding:6px 4px;font-variant-numeric:tabular-nums}.time:hover,.time:focus{border-color:var(--line);background:white;border-radius:4px}.sum{font-size:13px;color:#8a7765;min-width:95px;text-align:right;font-variant-numeric:tabular-nums}.unit{font-size:11px;color:#aa9b8a}.actions{display:flex;gap:0;opacity:0}.row:hover .actions,.row:focus-within .actions{opacity:1}.actions button{padding:5px;color:#a49280;font-size:14px}.row.drop-before:before,.row.drop-after:after{content:'';position:absolute;left:calc(8px + var(--depth)*27px);right:8px;height:2px;background:var(--orange);z-index:2}.row.drop-before:before{top:-1px}.row.drop-after:after{bottom:-1px}.row.drop-child{background:#ffead3;box-shadow:inset 3px 0 var(--orange)}.row.dragging{opacity:.35}footer{margin-top:20px;display:flex;gap:20px;align-items:center;color:#a59788;font-size:11px}.notice{color:#a14c1e;font-size:12px;margin:12px 0}.empty{padding:50px;text-align:center;color:#a59788;font-size:13px}input[type=file]{display:none}details{margin-left:auto}summary{cursor:pointer}details p{line-height:2;max-width:380px} @media(max-width:600px){main{margin:30px auto;padding:0 12px}.row{gap:6px;padding-left:calc(4px + var(--depth)*17px)}.actions{opacity:1}.actions button{font-size:12px;padding:4px}.sum{min-width:65px}.total{font-size:22px}.time{width:43px}.tools{flex-wrap:wrap}footer{align-items:flex-start}.subtle{font-size:11px}}
+.draft{min-height:40px;padding:2px 8px 2px 50px;border-bottom:1px solid var(--line)}.draft input{width:100%;border:0;background:transparent;font:inherit;font-size:14px;padding:9px 0;color:inherit;outline:none}.draft input::placeholder{color:#b6a999}.row.drop-before:before,.row.drop-after:after{left:calc(8px + var(--drop-depth,0)*27px)}.draft.drop-end{box-shadow:inset 0 2px var(--orange)}@media(max-width:600px){.row.drop-before:before,.row.drop-after:after{left:calc(4px + var(--drop-depth,0)*17px)}}
+.row .time{margin-right:-8px;padding-right:0;appearance:textfield;-moz-appearance:textfield}.time::-webkit-inner-spin-button,.time::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}@media(max-width:600px){.row .time{margin-right:-5px}}
+.name{resize:none;overflow:hidden;line-height:1.6;overflow-wrap:anywhere;white-space:pre-wrap;box-sizing:border-box}.row{align-items:flex-start}.handle,.status,.time,.sum,.unit,.actions{align-self:flex-start}.status{margin-top:7px}.handle{margin-top:3px}.time,.sum{margin-top:3px}.unit{margin-top:10px}.actions{margin-top:3px}
+</style>
+<main>
+<header><div class="brand"><span class="logo">⌘</span><h1>Task Tree</h1></div><div class="total"><small>合計</small><span id="total">0分</span></div></header>
+
+<div id="notice" class="notice" role="status"></div><div id="tree" aria-label="タスク一覧"></div><div class="draft" id="draft-row"><input id="draft" aria-label="新しいタスク" placeholder="タスクを入力…" autocomplete="off"></div>
+<footer><details><summary>操作</summary><p>Ctrl / Cmd + Z：元に戻す<br>Ctrl / Cmd + Shift + Z：やり直し<br>↑ / ↓：前後のタスクへ移動<br>Alt + ↑ / ↓：同じ階層で入れ替え<br>Enter：次の行を追加<br>Tab / Shift+Tab：階層を変更</p></details></footer>
+</main>
+<script>
+(()=>{
+'use strict';
+const KEY='tasktree2026.v1';
+const uid=()=>globalThis.crypto?.randomUUID?.()??'n'+Date.now().toString(36)+Math.random().toString(36).slice(2);
+let nodes=[],past=[],future=[],dragId=null,drop=null,grabOffset=0;
+const $=id=>document.getElementById(id);
+const clone=value=>JSON.parse(JSON.stringify(value));
+const format=minutes=>minutes>=60?`${Math.floor(minutes/60)}時間${minutes%60?minutes%60+'分':''}`:`${minutes}分`;
+function locate(id,list=nodes,parent=null){for(let i=0;i<list.length;i++){const n=list[i];if(n.id===id)return{node:n,list,index:i,parent};const r=locate(id,n.children,n);if(r)return r;}return null;}
+function contains(n,id){return n.id===id||n.children.some(c=>contains(c,id));}
+function aggregate(n){if(!n.children.length)return{minutes:n.minutes??0,state:n.state,missing:0};const parts=n.children.map(aggregate);return{minutes:parts.reduce((s,x)=>s+(x.minutes??0),0),state:parts.every(x=>x.state===0)?0:parts.every(x=>x.state===2)?2:1,missing:parts.reduce((s,x)=>s+x.missing,0)};}
+function makeNode(){return{id:uid(),title:'',minutes:30,state:0,children:[]};}
+function message(s){$('notice').textContent=s;}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(nodes));}catch{message('自動保存できません。タスクを閉じる前に保存環境を確認してください');}}
+function mutate(fn,focus){past.push(clone(nodes));if(past.length>100)past.shift();future=[];fn();persist();render();if(focus)focusName(focus);}
+function focusName(id){const el=document.querySelector(`[data-id="${id}"] .name`);el?.focus();}
+function travel(from,to){if(!from.length)return;to.push(clone(nodes));nodes=from.pop();persist();render();}
+function indent(id){const r=locate(id);if(!r||r.index===0)return;mutate(()=>{r.list.splice(r.index,1);r.list[r.index-1].children.push(r.node);},id);}
+function outdent(id){const r=locate(id);if(!r?.parent)return;const p=locate(r.parent.id);mutate(()=>{r.list.splice(r.index,1);p.list.splice(p.index+1,0,r.node);},id);}
+function remove(id){const r=locate(id);const next=r.list[r.index+1]?.id??r.list[r.index-1]?.id??r.parent?.id;mutate(()=>r.list.splice(r.index,1),next);}
+function move(source,target,mode){const s=locate(source),t=locate(target);if(!s||!t||contains(s.node,target))return false;mutate(()=>{s.list.splice(s.index,1);const dest=locate(target);if(mode==='child')dest.node.children.push(s.node);else dest.list.splice(dest.index+(mode==='after'?1:0),0,s.node);},source);return true;}
+function swapSibling(id,direction){const r=locate(id);if(!r)return false;const neighbor=r.list[r.index+direction];if(!neighbor)return false;return move(id,neighbor.id,direction<0?'before':'after');}
+function resizeName(input){input.style.height='0px';input.style.height=input.scrollHeight+'px';}
+function atVisualEdge(input,direction){
+  if(input.selectionStart!==input.selectionEnd)return false;
+  const position=input.selectionStart;
+  if(direction<0&&position===0||direction>0&&position===input.value.length)return true;
+  const mirror=document.createElement('div'),style=getComputedStyle(input);
+  for(const key of ['font','lineHeight','letterSpacing','padding','border','boxSizing','wordBreak','overflowWrap','tabSize'])mirror.style[key]=style[key];
+  Object.assign(mirror.style,{position:'fixed',left:'-10000px',top:'0',visibility:'hidden',width:input.getBoundingClientRect().width+'px',whiteSpace:'pre-wrap'});
+  const first=document.createElement('span'),caret=document.createElement('span'),last=document.createElement('span');
+  first.textContent='\u200b';caret.textContent='\u200b';last.textContent='\u200b';
+  mirror.append(first,document.createTextNode(input.value.slice(0,position)),caret,document.createTextNode(input.value.slice(position)),last);
+  document.body.append(mirror);
+  const y=caret.getBoundingClientRect().top,edge=(direction<0?first:last).getBoundingClientRect().top;
+  mirror.remove();return Math.abs(y-edge)<1;
+}
+function navigateName(input,direction){
+  if(!atVisualEdge(input,direction))return false;
+  const fields=[...document.querySelectorAll('#tree .name'),$('draft')];
+  const next=fields[fields.indexOf(input)+direction];if(!next)return false;
+  next.focus();const position=direction<0?next.value.length:0;next.setSelectionRange(position,position);return true;
+}
+function render(){const root=$('tree');root.replaceChildren();const totals=nodes.map(aggregate);$('total').textContent=format(totals.reduce((s,x)=>s+(x.minutes??0),0));
+function draw(n,depth){const a=aggregate(n),leaf=!n.children.length;const row=document.createElement('div');row.className='row'+(a.state===2?' completed':'');row.dataset.id=n.id;row.style.setProperty('--depth',depth);
+row.addEventListener('keydown',e=>{if(e.isComposing||!e.altKey||e.ctrlKey||e.metaKey||e.shiftKey||!['ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const direction=e.key==='ArrowUp'?-1:1;const r=locate(n.id);if(!r?.list[r.index+direction])return;const active=e.target;const field=active.classList.contains('time')?'.time':active.classList.contains('name')?'.name':'.status';const start=field==='.name'?active.selectionStart:null,end=field==='.name'?active.selectionEnd:null;active.blur();swapSibling(n.id,direction);const input=document.querySelector('[data-id="'+n.id+'"] '+field);input?.focus();if(start!==null)input?.setSelectionRange(start,end);});
+const handle=document.createElement('span');handle.className='handle';handle.textContent='⠿';handle.draggable=true;handle.title='ドラッグして移動';handle.addEventListener('dragstart',e=>{dragId=n.id;grabOffset=e.clientX-handle.getBoundingClientRect().left;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',n.id);row.classList.add('dragging');});handle.addEventListener('dragend',clearDrag);
+const state=document.createElement('button');state.className='status '+['todo','doing','done'][a.state];state.disabled=!leaf;state.setAttribute('aria-label',`${n.title||'タスク'}: ${['TODO','DOING','DONE'][a.state]}`);state.title=leaf?'クリックで状態を変更':'配下の葉から集計';state.onclick=()=>mutate(()=>n.state=(n.state+1)%3);
+const name=document.createElement('textarea');name.rows=1;name.wrap='soft';name.className='name';name.value=n.title;name.placeholder='タスク名';name.setAttribute('aria-label','タスク名');let editBefore=null;name.addEventListener('focus',()=>{editBefore=clone(nodes);});name.addEventListener('input',()=>{n.title=name.value;resizeName(name);persist();});name.addEventListener('change',()=>{if(editBefore&&JSON.stringify(editBefore)!==JSON.stringify(nodes)){past.push(editBefore);future=[];}editBefore=clone(nodes);});name.addEventListener('keydown',e=>{if(e.isComposing)return;if(!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&['ArrowUp','ArrowDown'].includes(e.key)){if(navigateName(name,e.key==='ArrowUp'?-1:1))e.preventDefault();return;}if(e.key==='Enter'){e.preventDefault();name.blur();const r=locate(n.id),fresh=makeNode();mutate(()=>r.list.splice(r.index+1,0,fresh),fresh.id);}if(e.key==='Tab'){e.preventDefault();name.blur();(e.shiftKey?outdent:indent)(n.id);focusName(n.id);}});
+row.append(handle,state,name);
+if(leaf){const input=document.createElement('input');input.type='number';input.min='0';input.max='10000000';input.step='1';input.className='time';input.value=n.minutes??'';input.placeholder='0';input.setAttribute('aria-label',`${n.title||'タスク'}の所要時間（分）`);input.onchange=()=>{const value=input.value===''?null:Number(input.value);if(value!==null&&(!Number.isSafeInteger(value)||value<0||value>10000000)){input.value=n.minutes??'';return;}mutate(()=>n.minutes=value);};const unit=document.createElement('span');unit.className='unit';unit.textContent='分';row.append(input,unit);}else{const sum=document.createElement('span');sum.className='sum';sum.textContent=format(a.minutes);sum.title='配下の葉の合計';row.append(sum);}
+const actions=document.createElement('span');actions.className='actions';for(const[label,title,fn]of[['×','子孫ごと削除',()=>remove(n.id)]]){const b=document.createElement('button');b.textContent=label;b.title=title;b.setAttribute('aria-label',title);b.onclick=fn;actions.append(b);}row.append(actions);
+row.addEventListener('dragover',e=>{if(!dragId||contains(locate(dragId).node,n.id))return;e.preventDefault();const rect=row.getBoundingClientRect(),after=e.clientY>=rect.top+rect.height/2;const step=window.innerWidth<=600?17:27;const base=root.getBoundingClientRect().left+(window.innerWidth<=600?4:8);const desired=Math.max(0,Math.round((e.clientX-grabOffset-base)/step));const plan=dropPlan(dragId,n.id,after,desired);if(!plan)return;clearIndicators();drop=plan;const targetRow=document.querySelector('[data-id="'+plan.target+'"]');let marker=targetRow;if(plan.mode!=='before'){const descendants=[...root.querySelectorAll('.row')];const index=descendants.indexOf(targetRow);const targetDepth=Number(targetRow.style.getPropertyValue('--depth'));for(let i=index+1;i<descendants.length&&Number(descendants[i].style.getPropertyValue('--depth'))>targetDepth;i++)marker=descendants[i];}marker.classList.add(plan.mode==='before'?'drop-before':'drop-after');marker.style.setProperty('--drop-depth',plan.depth);e.dataTransfer.dropEffect='move';});row.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();if(drop)move(dragId,drop.target,drop.mode);clearDrag();});row.addEventListener('dragleave',e=>{if(!row.contains(e.relatedTarget)){clearIndicators();drop=null;}});root.append(row);resizeName(name);n.children.forEach(c=>draw(c,depth+1));}
+nodes.forEach(n=>draw(n,0));}
+window.addEventListener('resize',()=>document.querySelectorAll('textarea.name').forEach(resizeName));
+
+function clearIndicators(){document.querySelectorAll('.drop-before,.drop-after,.drop-child,.drop-end').forEach(x=>x.classList.remove('drop-before','drop-after','drop-child','drop-end'));}
+function dropPlan(source,target,after,desired){let t=locate(target);if(!t||contains(locate(source).node,target))return null;let depth=0;for(let p=t.parent;p;p=locate(p.id).parent)depth++;if(after&&desired>depth)return{target,mode:'child',depth:depth+1};while(depth>desired&&t.parent){t=locate(t.parent.id);depth--;}if(contains(locate(source).node,t.node.id))return null;return{target:t.node.id,mode:after?'after':'before',depth};}
+function clearDrag(){clearIndicators();dragId=null;drop=null;document.querySelectorAll('.dragging,.drop-before,.drop-after,.drop-child').forEach(x=>x.classList.remove('dragging','drop-before','drop-after','drop-child'));}
+function validate(data){if(!Array.isArray(data))throw Error('形式が違います');let count=0;const ids=new Set();function check(list,depth){if(depth>50)throw Error('階層が深すぎます');return list.map(n=>{if(++count>5000||!n||typeof n.title!=='string'||n.title.length>10000||![0,1,2].includes(n.state)||!(n.minutes===null||(Number.isSafeInteger(n.minutes)&&n.minutes>=0&&n.minutes<=10000000))||!Array.isArray(n.children))throw Error('タスクの形式が違います');let id=typeof n.id==='string'&&/^[a-zA-Z0-9-]+$/.test(n.id)&&!ids.has(n.id)?n.id:uid();ids.add(id);return{id,title:n.title,minutes:n.minutes,state:n.state,children:check(n.children,depth+1)};});}return check(data,0);}
+function commitDraft(focus=false){const input=$('draft');if(!input.value.trim())return;const n=makeNode();n.title=input.value;input.value='';mutate(()=>nodes.push(n));if(focus)input.focus();}
+$('draft').addEventListener('change',()=>commitDraft());
+$('draft').addEventListener('keydown',e=>{if(!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&e.key==='ArrowUp'){if(document.querySelector('#tree .name')||e.target.value.trim()){e.preventDefault();e.target.blur();const fields=[...document.querySelectorAll('#tree .name')];const last=fields.at(-1);last.focus();last.setSelectionRange(last.value.length,last.value.length);}return;}if(e.key==='Enter'&&!e.isComposing){e.preventDefault();commitDraft(true);}});
+$('draft-row').addEventListener('dragover',e=>{if(!dragId)return;e.preventDefault();clearIndicators();drop=null;$('draft-row').classList.add('drop-end');});
+$('draft-row').addEventListener('dragleave',()=> $('draft-row').classList.remove('drop-end'));
+$('draft-row').addEventListener('drop',e=>{if(!dragId)return;e.preventDefault();const source=locate(dragId);mutate(()=>{source.list.splice(source.index,1);nodes.push(source.node);});clearDrag();});
+
+document.addEventListener('keydown',e=>{if(e.isComposing||!(e.ctrlKey||e.metaKey))return;const key=e.key.toLowerCase();if(key!=='z'&&key!=='y')return;if(e.target===$('draft'))return;e.preventDefault();const active=e.target;active.blur?.();if(key==='y'||e.shiftKey)travel(future,past);else travel(past,future);if(active.classList?.contains('name'))focusName(active.closest('.row').dataset.id);});
+try{const saved=localStorage.getItem(KEY);if(saved)nodes=validate(JSON.parse(saved));else nodes=[{id:uid(),title:'試作品を試す',minutes:null,state:0,children:[{id:uid(),title:'タスク名を編集する',minutes:5,state:2,children:[]},{id:uid(),title:'丸をクリックして状態を変える',minutes:5,state:1,children:[]},{id:uid(),title:'Tab で階層を変える',minutes:10,state:0,children:[]}]},{id:uid(),title:'自分のタスクを追加する',minutes:null,state:0,children:[]}];}catch{message('保存データを読み込めませんでした。');}
+// ページ内専用の操作窓口。通信や任意コードの実行は行わない。
+function apiEdit(edit){
+  document.activeElement?.blur();
+  const next=clone(nodes);
+  const result=edit(next);
+  const checked=validate(next);
+  mutate(()=>nodes=checked);
+  return result;
+}
+function requireNode(tree,id){const r=locate(id,tree);if(!r)throw Error('タスクが見つかりません');return r;}
+const api=Object.freeze({
+  get(){return clone(nodes);},
+  add({title='',minutes=30,state=0,parentId=null}={}){
+    const n={id:uid(),title,minutes,state,children:[]};
+    return apiEdit(tree=>{const list=parentId===null?tree:requireNode(tree,parentId).node.children;list.push(n);return n.id;});
+  },
+  update(id,patch){
+    if(!patch||typeof patch!=='object'||Array.isArray(patch)||Object.keys(patch).some(k=>!['title','minutes','state'].includes(k)))throw Error('更新できる項目は title / minutes / state です');
+    return apiEdit(tree=>{const n=requireNode(tree,id).node;if(n.children.length&&('minutes' in patch||'state' in patch))throw Error('親の時間・状態は自動集計です');Object.assign(n,patch);});
+  },
+  move(id,{parentId=null,beforeId=null}={}){
+    return apiEdit(tree=>{const source=requireNode(tree,id);if(parentId!==null&&contains(source.node,parentId))throw Error('自分や子孫の下には移動できません');if(beforeId!==null&&contains(source.node,beforeId))throw Error('自分や子孫は挿入先に指定できません');source.list.splice(source.index,1);const list=parentId===null?tree:requireNode(tree,parentId).node.children;let index=list.length;if(beforeId!==null){index=list.findIndex(n=>n.id===beforeId);if(index<0)throw Error('beforeId は移動先の直下のタスクを指定してください');}list.splice(index,0,source.node);});
+  },
+  remove(id){return apiEdit(tree=>{const r=requireNode(tree,id);r.list.splice(r.index,1);});},
+  replace(data){const checked=validate(data);document.activeElement?.blur();mutate(()=>nodes=checked);},
+  undo(){document.activeElement?.blur();travel(past,future);},
+  redo(){document.activeElement?.blur();travel(future,past);}
+});
+Object.defineProperty(globalThis,'taskTree',{value:api,writable:false,configurable:false});
+
+render();
+})();
+</script>
+</html>

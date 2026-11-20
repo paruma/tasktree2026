@@ -1,0 +1,115 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const { readFileSync } = require('node:fs');
+const { createHash, webcrypto } = require('node:crypto');
+const vm = require('node:vm');
+
+const html = readFileSync(require('node:path').join(__dirname, '../index.html'), 'utf8');
+const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+
+// ブラウザ専用 API には触れず、公開されたタスク操作と描画内容を検証する。
+function app() {
+  class Element {
+    constructor(tag = 'div') {
+      this.tag = tag;
+      this.children = [];
+      this.style = { setProperty() {} };
+      this.dataset = {};
+      this.classList = { add() {}, remove() {} };
+      this.events = {};
+      this.value = '';
+      this.scrollHeight = 32;
+    }
+    append(...items) { this.children.push(...items); }
+    replaceChildren() { this.children = []; }
+    setAttribute() {}
+    addEventListener(name, handler) { this.events[name] = handler; }
+    focus() {}
+  }
+  const elements = {};
+  let saved;
+  const document = {
+    getElementById: id => elements[id] ??= new Element(),
+    createElement: tag => new Element(tag),
+    querySelector: () => null,
+    querySelectorAll: () => [],
+    addEventListener() {},
+  };
+  const context = {
+    document,
+    window: { addEventListener() {} },
+    crypto: webcrypto,
+    localStorage: {
+      getItem() { return null; },
+      setItem(key, value) { saved = value; },
+    },
+  };
+  vm.createContext(context);
+  vm.runInContext(script, context);
+  context.taskTree.replace([]);
+  return { api: context.taskTree, elements, context, saved: () => saved };
+}
+
+test('CSP は現在のコードだけを許可し、外部通信と任意スクリプトを許可しない', () => {
+  const hash = createHash('sha256').update(script).digest('base64');
+  const policy = html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];
+  assert.ok(policy.includes(`script-src 'sha256-${hash}'`), 'node scripts/update-csp.mjs を実行してください');
+  assert.ok(policy.includes("default-src 'none'"));
+  assert.ok(policy.includes("connect-src 'none'"));
+  assert.ok(policy.includes("script-src-attr 'none'"));
+  assert.ok(!policy.includes('unsafe-eval'));
+});
+
+test('初期値・部分木の移動・集計・取り消し・保存', () => {
+  const { api, elements, saved } = app();
+  const parent = api.add({ title: '親' });
+  const child = api.add({ title: '子', minutes: 15 });
+  assert.equal(api.get()[0].minutes, 30);
+  api.move(child, { parentId: parent });
+  assert.equal(elements.total.textContent, '15分');
+  api.update(child, { state: 2 });
+  assert.equal(elements.tree.children[0].children[1].className, 'status done');
+  api.move(child, {});
+  assert.equal(api.get().length, 2);
+  api.undo();
+  assert.equal(api.get()[0].children[0].id, child);
+  api.redo();
+  assert.equal(api.get().length, 2);
+  assert.equal(JSON.parse(saved()).length, 2);
+});
+
+test('不正入力・循環・不正な挿入先は既存データを変更しない', () => {
+  const { api } = app();
+  const parent = api.add({ title: '親' });
+  const child = api.add({ title: '子', parentId: parent });
+  const before = JSON.stringify(api.get());
+  for (const invalid of [
+    () => api.move(parent, { parentId: child }),
+    () => api.move(child, { beforeId: 'missing' }),
+    () => api.update(child, { minutes: -1 }),
+    () => api.update(child, { state: 9 }),
+    () => api.update(parent, { state: 2 }),
+    () => api.update(child, { children: [] }),
+    () => api.add({ title: 123 }),
+    () => api.replace([{ title: '不正', children: [] }]),
+  ]) {
+    assert.throws(invalid);
+    assert.equal(JSON.stringify(api.get()), before);
+  }
+});
+
+test('タスク名を HTML として描画せず、取得結果は内部データから分離する', () => {
+  const { api, elements, context } = app();
+  const payload = '<img src=x onerror=alert(1)><script>alert(1)</script>';
+  api.add({ title: payload });
+  const field = elements.tree.children[0].children[2];
+  assert.equal(field.tag, 'textarea');
+  assert.equal(field.value, payload);
+  assert.equal(field.children.length, 0);
+  const copy = api.get();
+  copy[0].title = '外部からの変更';
+  assert.equal(api.get()[0].title, payload);
+  assert.equal(context.nodes, undefined);
+  assert.equal(context.mutate, undefined);
+  assert.ok(Object.isFrozen(api));
+});
