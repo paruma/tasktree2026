@@ -1,0 +1,8 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-window",
+  "description": "同梱されたメイン画面だけに必要な操作を許可する",
+  "windows": ["main"],
+  "local": true,
+  "permissions": ["tasktree-window"]
+}

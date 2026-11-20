@@ -8,7 +8,7 @@ const html = readFileSync(require('node:path').join(__dirname, '../index.html'),
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 
 // ブラウザ専用 API には触れず、公開されたタスク操作と描画内容を検証する。
-function app() {
+function app(options = {}) {
   class Element {
     constructor(tag = 'div') {
       this.tag = tag;
@@ -28,26 +28,40 @@ function app() {
   }
   const elements = {};
   let saved;
+  let failSave = false;
+  let channel;
+  const replies = [];
   const document = {
     getElementById: id => elements[id] ??= new Element(),
     createElement: tag => new Element(tag),
     querySelector: () => null,
     querySelectorAll: () => [],
     addEventListener() {},
+    documentElement: new Element(),
   };
   const context = {
     document,
-    window: { addEventListener() {} },
+    window: {
+      addEventListener() {},
+      ...(options.desktop ? { __TAURI__: { core: {
+        Channel: class {},
+        invoke(command, args) {
+          if (command === 'connect_pipe') channel = args.channel;
+          if (command === 'complete_pipe_request') replies.push(args.reply);
+          return Promise.resolve();
+        },
+      } } } : {}),
+    },
     crypto: webcrypto,
     localStorage: {
       getItem() { return null; },
-      setItem(key, value) { saved = value; },
+      setItem(key, value) { if (failSave) throw Error('QuotaExceededError'); saved = value; },
     },
   };
   vm.createContext(context);
   vm.runInContext(script, context);
   context.taskTree.replace([]);
-  return { api: context.taskTree, elements, context, saved: () => saved };
+  return { api: context.taskTree, elements, context, saved: () => saved, failSave: value => { failSave = value; }, channel: () => channel, replies };
 }
 
 test('CSP は現在のコードだけを許可し、外部通信と任意スクリプトを許可しない', () => {
@@ -112,4 +126,38 @@ test('タスク名を HTML として描画せず、取得結果は内部デー�
   assert.equal(context.nodes, undefined);
   assert.equal(context.mutate, undefined);
   assert.ok(Object.isFrozen(api));
+});
+
+
+test('保存失敗時は外部操作を成功扱いにせず、タスクと履歴を戻す', () => {
+  const { api, failSave, saved } = app();
+  api.add({ title: '保存済み' });
+  const before = JSON.stringify(api.get());
+  const stored = saved();
+  failSave(true);
+  assert.throws(() => api.add({ title: '保存失敗' }), /保存/);
+  assert.equal(JSON.stringify(api.get()), before);
+  assert.equal(saved(), stored);
+  assert.throws(() => api.undo(), /保存/);
+  assert.equal(JSON.stringify(api.get()), before);
+  failSave(false);
+  api.undo();
+  assert.equal(api.get().length, 0);
+});
+
+test('デスクトップ要求は固定操作だけを実行し、保存後に成功を返す', () => {
+  const { api, channel, replies, failSave } = app({ desktop: true });
+  const send = request => channel().onmessage({ id: 1, deadline: Date.now() + 10000, request });
+  send({ op: 'add', title: 'パイプから追加' });
+  assert.equal(replies.at(-1).ok, true);
+  assert.equal(api.get()[0].title, 'パイプから追加');
+  const before = JSON.stringify(api.get());
+  send({ op: 'eval', code: 'alert(1)' });
+  assert.equal(replies.at(-1).ok, false);
+  channel().onmessage({ id: 2, deadline: 0, request: { op: 'remove', id: api.get()[0].id } });
+  assert.equal(replies.at(-1).ok, false);
+  failSave(true);
+  send({ op: 'add', title: '保存できない' });
+  assert.equal(replies.at(-1).ok, false);
+  assert.equal(JSON.stringify(api.get()), before);
 });

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ja">
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l6js9MIg0q4j/IdAdWQael+XfXwxGXWjcdNSWzKLRxs='; script-src-attr 'none'; style-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-QkZNiYG+ute+/+YWHG/zzh1oU3QSGwDPDM1ezq8nYsY='; script-src-attr 'none'; style-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Task Tree</title>
 <style>
@@ -9,6 +9,7 @@
 .draft{min-height:40px;padding:2px 8px 2px 50px;border-bottom:1px solid var(--line)}.draft input{width:100%;border:0;background:transparent;font:inherit;font-size:14px;padding:9px 0;color:inherit;outline:none}.draft input::placeholder{color:#b6a999}.row.drop-before:before,.row.drop-after:after{left:calc(8px + var(--drop-depth,0)*27px)}.draft.drop-end{box-shadow:inset 0 2px var(--orange)}@media(max-width:600px){.row.drop-before:before,.row.drop-after:after{left:calc(4px + var(--drop-depth,0)*17px)}}
 .row .time{margin-right:-8px;padding-right:0;appearance:textfield;-moz-appearance:textfield}.time::-webkit-inner-spin-button,.time::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}@media(max-width:600px){.row .time{margin-right:-5px}}
 .name{resize:none;overflow:hidden;line-height:1.6;overflow-wrap:anywhere;white-space:pre-wrap;box-sizing:border-box}.row{align-items:flex-start}.handle,.status,.time,.sum,.unit,.actions{align-self:flex-start}.status{margin-top:7px}.handle{margin-top:3px}.time,.sum{margin-top:3px}.unit{margin-top:10px}.actions{margin-top:3px}
+.desktop main{margin-top:24px;margin-bottom:24px}
 </style>
 <main>
 <header><div class="brand"><span class="logo">⌘</span><h1>Task Tree</h1></div><div class="total"><small>合計</small><span id="total">0分</span></div></header>
@@ -30,10 +31,10 @@ function contains(n,id){return n.id===id||n.children.some(c=>contains(c,id));}
 function aggregate(n){if(!n.children.length)return{minutes:n.minutes??0,state:n.state,missing:0};const parts=n.children.map(aggregate);return{minutes:parts.reduce((s,x)=>s+(x.minutes??0),0),state:parts.every(x=>x.state===0)?0:parts.every(x=>x.state===2)?2:1,missing:parts.reduce((s,x)=>s+x.missing,0)};}
 function makeNode(){return{id:uid(),title:'',minutes:30,state:0,children:[]};}
 function message(s){$('notice').textContent=s;}
-function persist(){try{localStorage.setItem(KEY,JSON.stringify(nodes));}catch{message('自動保存できません。タスクを閉じる前に保存環境を確認してください');}}
-function mutate(fn,focus){past.push(clone(nodes));if(past.length>100)past.shift();future=[];fn();persist();render();if(focus)focusName(focus);}
+function persist(strict=false){try{localStorage.setItem(KEY,JSON.stringify(nodes));}catch{message('自動保存できません。タスクを閉じる前に保存環境を確認してください');if(strict)throw Error('保存できなかったため操作を取り消しました');}}
+function mutate(fn,focus,strict=false){const before=clone(nodes);try{fn();persist(strict);}catch(error){nodes=before;render();throw error;}past.push(before);if(past.length>100)past.shift();future=[];render();if(focus)focusName(focus);}
 function focusName(id){const el=document.querySelector(`[data-id="${id}"] .name`);el?.focus();}
-function travel(from,to){if(!from.length)return;to.push(clone(nodes));nodes=from.pop();persist();render();}
+function travel(from,to,strict=false){if(!from.length)return;const before=nodes;nodes=clone(from.at(-1));try{persist(strict);}catch(error){nodes=before;render();throw error;}to.push(clone(before));from.pop();render();}
 function indent(id){const r=locate(id);if(!r||r.index===0)return;mutate(()=>{r.list.splice(r.index,1);r.list[r.index-1].children.push(r.node);},id);}
 function outdent(id){const r=locate(id);if(!r?.parent)return;const p=locate(r.parent.id);mutate(()=>{r.list.splice(r.index,1);p.list.splice(p.index+1,0,r.node);},id);}
 function remove(id){const r=locate(id);const next=r.list[r.index+1]?.id??r.list[r.index-1]?.id??r.parent?.id;mutate(()=>r.list.splice(r.index,1),next);}
@@ -92,7 +93,7 @@ function apiEdit(edit){
   const next=clone(nodes);
   const result=edit(next);
   const checked=validate(next);
-  mutate(()=>nodes=checked);
+  mutate(()=>nodes=checked,undefined,true);
   return result;
 }
 function requireNode(tree,id){const r=locate(id,tree);if(!r)throw Error('タスクが見つかりません');return r;}
@@ -111,10 +112,42 @@ const api=Object.freeze({
   },
   remove(id){return apiEdit(tree=>{const r=requireNode(tree,id);r.list.splice(r.index,1);});},
   replace(data){const checked=validate(data);document.activeElement?.blur();mutate(()=>nodes=checked);},
-  undo(){document.activeElement?.blur();travel(past,future);},
-  redo(){document.activeElement?.blur();travel(future,past);}
+  undo(){document.activeElement?.blur();travel(past,future,true);},
+  redo(){document.activeElement?.blur();travel(future,past,true);}
 });
 Object.defineProperty(globalThis,'taskTree',{value:api,writable:false,configurable:false});
+
+// デスクトップ版だけで接続する。ブラウザ版には通信窓口を開かない。
+const desktop=window.__TAURI__?.core;
+if(desktop){
+  document.documentElement.classList.add('desktop');
+  document.addEventListener('contextmenu',event=>{
+    if(event.target.closest('input, textarea, [contenteditable="true"]'))return;
+    event.preventDefault();
+    desktop.invoke('show_window_menu').catch(()=>message('メニューを開けませんでした'));
+  });
+  const channel=new desktop.Channel();
+  channel.onmessage=({id,deadline,request})=>{
+    let reply;
+    try{
+      if(Date.now()>deadline)throw Error('操作の有効期限が切れています');
+      let result;
+      switch(request.op){
+        case 'get':result=api.get();break;
+        case 'add':result=api.add(request);break;
+        case 'update':result=api.update(request.id,request.patch);break;
+        case 'move':result=api.move(request.id,request);break;
+        case 'remove':result=api.remove(request.id);break;
+        case 'undo':result=api.undo();break;
+        case 'redo':result=api.redo();break;
+        default:throw Error('未対応の操作です');
+      }
+      reply={ok:true,result:result??null};
+    }catch(error){reply={ok:false,error:error.message};}
+    desktop.invoke('complete_pipe_request',{id,reply}).catch(()=>message('操作結果を返せませんでした。現在のタスクを確認してください'));
+  };
+  desktop.invoke('connect_pipe',{channel}).catch(()=>message('外部操作の接続を準備できませんでした'));
+}
 
 render();
 })();

@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "tasktree-window"
+description = "メイン画面から最前面メニューとタスク専用パイプ応答だけを許可する"
+commands.allow = ["show_window_menu", "connect_pipe", "complete_pipe_request"]
