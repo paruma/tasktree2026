@@ -1,4 +1,4 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![windows_subsystem = "windows"]
 
 mod bridge;
 #[cfg(windows)]
@@ -8,7 +8,7 @@ use bridge::{Bridge, Envelope, Reply};
 use std::sync::Arc;
 use tauri::{
     ipc::Channel,
-    menu::{CheckMenuItem, Menu},
+    menu::{CheckMenuItem, Menu, MenuItem},
     Manager,
 };
 
@@ -62,7 +62,8 @@ fn main() {
                 false,
                 None::<&str>,
             )?;
-            let menu = Menu::with_items(app, &[&always_on_top])?;
+            let help = MenuItem::with_id(app, "show-help", "操作方法", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&always_on_top, &help])?;
             app.manage(WindowMenu {
                 menu,
                 always_on_top,
@@ -79,6 +80,15 @@ fn main() {
             complete_pipe_request
         ])
         .on_menu_event(|app, event| {
+            if event.id().as_ref() == "show-help" {
+                if let Some(window) = app.get_webview_window("main") {
+                    if let Err(error) =
+                        window.eval("window.dispatchEvent(new Event('tasktree-show-help'))")
+                    {
+                        eprintln!("操作方法を表示できませんでした: {error}");
+                    }
+                }
+            }
             if event.id().as_ref() == "always-on-top" {
                 if let Some(window) = app.get_webview_window("main") {
                     let result = window

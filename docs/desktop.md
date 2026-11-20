@@ -12,13 +12,13 @@ WSL にあるこのリポジトリから Windows 版を作る場合:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\wsl.localhost\Ubuntu\home\paruma\dev\tasktree2026\scripts\windows.ps1 -Run
 ```
 
-Windows の一時ディレクトリでテストとリリースビルドを行い、`windows-app/tasktree.exe` にコピーします。ビルド済みアプリやタスクデータは Git 管理しません。
+Windows の一時ディレクトリでデバッグビルドを行い、`windows-app/tasktree.exe` にコピーします。ビルド済みアプリやタスクデータは Git 管理しません。配布用ビルドは `-Release`、Rust テストも実行する場合は `-Test` を付けます。通常の UI 確認にはデバッグ版を使います。
 
 通常の Windows チェックアウトで開発する場合は、`pnpm install --frozen-lockfile` の後に `pnpm desktop`、配布形式を生成する場合は `pnpm desktop:build` を使います。
 
 Ctrl + ＋（＝）で拡大、Ctrl + − で縮小、Ctrl + 0 で元の倍率に戻せます。Ctrl + マウスホイールでも倍率を変更できます。
 
-背景部分を右クリックすると「常に最前面に表示」を切り替えられます。文字入力欄では通常の編集メニューを保ちます。最前面の設定は起動ごとに解除されます。
+背景部分を右クリックすると「常に最前面に表示」を切り替えられます。「操作方法」でショートカット一覧を開けます。文字入力欄では通常の編集メニューを保ちます。最前面の設定は起動ごとに解除されます。
 
 ## 名前付きパイプ
 

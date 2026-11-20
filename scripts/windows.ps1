@@ -1,8 +1,9 @@
-﻿param([switch]$Run)
+﻿param([switch]$Run, [switch]$Release, [switch]$Test)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $buildRoot = Join-Path $env:TEMP 'tasktree2026-windows-build'
 $outputRoot = Join-Path $projectRoot 'windows-app'
+$profile = if ($Release) { 'release' } else { 'debug' }
 
 # WSL 内のソースを正本とし、Windows ローカルディスクでコンパイルする。
 New-Item -ItemType Directory -Force -Path "$buildRoot\src-tauri", "$buildRoot\dist" | Out-Null
@@ -18,14 +19,18 @@ foreach ($name in @('src', 'icons', 'capabilities', 'permissions')) {
 }
 Push-Location $buildRoot
 try {
-    & cargo test --manifest-path src-tauri/Cargo.toml --locked --features custom-protocol
-    if ($LASTEXITCODE -ne 0) { throw 'Windows tests failed.' }
-    & cargo build --manifest-path src-tauri/Cargo.toml --release --locked --features custom-protocol
+    if ($Test) {
+        & cargo test --manifest-path src-tauri/Cargo.toml --locked --features custom-protocol
+        if ($LASTEXITCODE -ne 0) { throw 'Windows tests failed.' }
+    }
+    $buildArguments = @('build', '--manifest-path', 'src-tauri/Cargo.toml', '--locked', '--features', 'custom-protocol')
+    if ($Release) { $buildArguments += '--release' }
+    & cargo @buildArguments
     if ($LASTEXITCODE -ne 0) { throw 'Windows build failed.' }
 } finally { Pop-Location }
 New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
-Copy-Item "$buildRoot\src-tauri\target\release\tasktree.exe" "$outputRoot\tasktree.exe" -Force
-Write-Output "Built: $outputRoot\tasktree.exe"
+Copy-Item "$buildRoot\src-tauri\target\$profile\tasktree.exe" "$outputRoot\tasktree.exe" -Force
+Write-Output "Built ($profile): $outputRoot\tasktree.exe"
 if ($Run) {
-    Start-Process -FilePath "$buildRoot\src-tauri\target\release\tasktree.exe" -WorkingDirectory $buildRoot
+    Start-Process -FilePath "$buildRoot\src-tauri\target\$profile\tasktree.exe" -WorkingDirectory $buildRoot
 }

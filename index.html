@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ja">
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-27fK6WwOdaDl2Y90eXHr1erCoKkfRFaq3THfMHP9WJI='; script-src-attr 'none'; style-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TX7b+nwNcOI7gk/SBLXY7q9y5tMr8z8l9bF+2tFhxLk='; script-src-attr 'none'; style-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Task Tree</title>
 <style>
@@ -11,13 +11,20 @@
 .name{resize:none;overflow:hidden;line-height:1.6;overflow-wrap:anywhere;white-space:pre-wrap;box-sizing:border-box}.row{align-items:flex-start}.handle,.status,.time,.sum,.unit,.actions{align-self:flex-start}.status{margin-top:7px}.handle{margin-top:3px}.time,.sum{margin-top:3px}.unit{margin-top:10px}.actions{margin-top:3px}
 .desktop main{margin-top:24px;margin-bottom:24px}
 .duration{display:inline-flex;align-items:baseline;gap:1px;flex-shrink:0;margin-top:3px}.duration .time,.duration .unit{align-self:baseline;margin:0;line-height:20px}.duration .time{padding:4px 0}
+dialog{width:max-content;max-width:calc(100% - 32px);padding:24px;border:1px solid var(--line);border-radius:12px;background:#fffdf9;color:inherit;box-shadow:0 12px 48px #49351b26}dialog::backdrop{background:#30251b33}dialog h2{font-size:16px;margin:0 0 20px}dialog dl{display:grid;grid-template-columns:auto auto;gap:12px 24px;font-size:12px;margin:0 0 20px}dialog dt{color:#8a7765}dialog dd{margin:0}#help-close{display:block;margin-left:auto;color:#a64e14;background:#f7e7d7}@media(max-width:400px){dialog{padding:18px}dialog dl{font-size:11px;gap:12px}}
 </style>
 <main>
 <header><div class="brand"><span class="logo">⌘</span><h1>Task Tree</h1></div><div class="total"><small>合計</small><span id="total">0分</span></div></header>
 
 <div id="notice" class="notice" role="status"></div><div id="tree" aria-label="タスク一覧"></div><div class="draft" id="draft-row"><input id="draft" aria-label="新しいタスク" placeholder="タスクを入力…" autocomplete="off"></div>
-<footer><details><summary>操作</summary><p>Ctrl / Cmd + Z：元に戻す<br>Ctrl / Cmd + Shift + Z：やり直し<br>↑ / ↓：前後のタスクへ移動<br>Alt + ↑ / ↓：同じ階層で入れ替え<br>Enter：次の行を追加<br>Tab / Shift+Tab：階層を変更</p></details></footer>
+
 </main>
+<dialog id="help" aria-labelledby="help-title">
+<h2 id="help-title">操作方法</h2>
+<dl><dt>Ctrl / Cmd + Z</dt><dd>元に戻す</dd><dt>Ctrl / Cmd + Shift + Z</dt><dd>やり直し</dd><dt>↑ / ↓</dt><dd>前後のタスクへ移動</dd><dt>Alt + ↑ / ↓</dt><dd>同じ階層で入れ替え</dd><dt>Enter</dt><dd>次の行を追加</dd><dt>Tab / Shift + Tab</dt><dd>階層を変更</dd><dt>Ctrl / Cmd + ＋ / −</dt><dd>拡大 / 縮小</dd><dt>Ctrl / Cmd + 0</dt><dd>倍率をリセット</dd></dl>
+<button id="help-close" autofocus>閉じる</button>
+</dialog>
+
 <script>
 (()=>{
 'use strict';
@@ -120,13 +127,17 @@ Object.defineProperty(globalThis,'taskTree',{value:api,writable:false,configurab
 
 // デスクトップ版だけで接続する。ブラウザ版には通信窓口を開かない。
 const desktop=window.__TAURI__?.core;
+function showHelp(){const help=$('help');if(!help.open)help.showModal();}
+$('help-close').addEventListener('click',()=>$('help').close());
+window.addEventListener('tasktree-show-help',showHelp);
+document.addEventListener('contextmenu',event=>{
+  if(event.target.closest('input, textarea, [contenteditable="true"]')||$('help').open)return;
+  event.preventDefault();
+  if(desktop)desktop.invoke('show_window_menu').catch(()=>message('メニューを開けませんでした'));
+  else showHelp();
+});
 if(desktop){
   document.documentElement.classList.add('desktop');
-  document.addEventListener('contextmenu',event=>{
-    if(event.target.closest('input, textarea, [contenteditable="true"]'))return;
-    event.preventDefault();
-    desktop.invoke('show_window_menu').catch(()=>message('メニューを開けませんでした'));
-  });
   const channel=new desktop.Channel();
   channel.onmessage=({id,deadline,request})=>{
     let reply;
