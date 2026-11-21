@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+cd "$(git rev-parse --show-toplevel)"
+git diff --cached --check
+pnpm --config.verify-deps-before-run=false run check
+pnpm --config.verify-deps-before-run=false run format:check
+pnpm --config.verify-deps-before-run=false run test

@@ -9,7 +9,9 @@
     "prepare:frontend": "node scripts/prepare-frontend.mjs",
     "desktop": "tauri dev",
     "desktop:build": "tauri build",
-    "check": "eslint index.html scripts/*.mjs eslint.config.mjs --max-warnings 0"
+    "check": "eslint index.html scripts/*.mjs eslint.config.mjs --max-warnings 0",
+    "format:check": "cargo fmt --manifest-path src-tauri/Cargo.toml --all --check",
+    "hooks:install": "git config --local core.hooksPath .githooks"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -79,3 +79,9 @@ DACL を明示して同じユーザーだけを許可し、リモート接続も
 - `0.1.0` のようなタグの push: 上記に加えて GitHub Release を作成。タグは package.json / Cargo.toml / tauri.conf.json のバージョンと一致させます。
 
 普段の動作確認にタグは不要です。利用者向けに版を確定するときだけタグを付けます。
+
+## pre-commit hook
+
+クローンごとに `pnpm install --frozen-lockfile` と `pnpm hooks:install` を実行します。Rust の整形検査には `rustfmt` が必要です。導入先は `git config --local --get core.hooksPath` で確認できます。
+
+hook はステージ済み差分の空白を検査し、作業ツリーに対して ESLint、Rust の整形検査、JavaScript のテストを実行します。失敗するとコミットを止めます。部分ステージを使う場合は、作業ツリーとコミット内容が異なる点に注意してください。hook はファイルを整形したりステージしたりしません。
