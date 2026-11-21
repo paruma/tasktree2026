@@ -8,9 +8,14 @@
     "test": "node --test tests/*.test.cjs",
     "prepare:frontend": "node scripts/prepare-frontend.mjs",
     "desktop": "tauri dev",
-    "desktop:build": "tauri build"
+    "desktop:build": "tauri build",
+    "check": "eslint index.html scripts/*.mjs eslint.config.mjs --max-warnings 0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.0.0"
+    "@eslint/js": "10.0.1",
+    "@tauri-apps/cli": "^2.0.0",
+    "eslint": "10.14.0",
+    "eslint-plugin-html": "8.2.1",
+    "globals": "17.14.0"
   }
 }

@@ -25,6 +25,7 @@ jobs:
         with:
           toolchain: stable
       - run: pnpm install --frozen-lockfile
+      - run: pnpm check
       - run: pnpm test
       - name: Check version metadata
         run: node scripts/check-version.mjs
