@@ -30,7 +30,7 @@ function app(options = {}) {
     addEventListener(name, handler) { this.events[name] = handler; }
     focus() {}
     blur() {}
-    getBoundingClientRect() { return { left: 0 }; }
+    getBoundingClientRect() { return { left: 0, top: 0, height: 40 }; }
   }
   const elements = {};
   let saved;
@@ -119,6 +119,20 @@ test('通常版は既存タスクの子を開閉し、保存データと集計�
     handle.onclick();
     assert.equal(handle.attributes['aria-expanded'], 'true');
     assert.equal(child.hidden, false);
+  }
+});
+
+test('展開中の親の下半分と最初の子の上半分は同じ挿入先になる', () => {
+  const node = (id, children = []) => ({ id, title: id, minutes: 1, state: 0, children });
+  for (const [targetIndex, y] of [[0, 30], [1, 1]]) {
+    const { api, elements } = app();
+    api.replace([node('a', [node('b')]), node('c')]);
+    const [parent, child, source] = elements.tree.children;
+    source.querySelector('.handle').events.dragstart({ clientX: 0, dataTransfer: { setData() {} } });
+    [parent, child][targetIndex].events.drop({
+      clientX: 35, clientY: y, preventDefault() {}, stopPropagation() {},
+    });
+    assert.deepEqual(Array.from(api.get()[0].children, task => task.id), ['c', 'b']);
   }
 });
 

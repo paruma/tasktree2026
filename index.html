@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="ja">
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BMpPe8+sfHUXqKAs0oPx4Md8j5CRZO/nFMjf8kkJQoo='; script-src-attr 'none'; style-src 'unsafe-inline'; connect-src 'none'; img-src data:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-VOrQclxrqpz2GQhfimYL2Xb8NHn/Q+HoGcEHWMF79zA='; script-src-attr 'none'; style-src 'unsafe-inline'; connect-src 'none'; img-src data:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Task Tree</title>
 <link rel="icon" href="data:image/png;base64,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">
 <style>
-:root{font-family:Inter,"Noto Sans JP",system-ui,sans-serif;color:#39342f;background:#fcfaf7;--orange:#e78032;--line:#ede5db}*{box-sizing:border-box}body{margin:0}main{max-width:620px;margin:14px auto;padding:0 28px}header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.total{display:flex;align-items:baseline;gap:6px;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}.total small{font-size:11px;color:#998e81;font-weight:400}.tools{display:flex;align-items:center;gap:7px;margin-bottom:16px}button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit;border-radius:6px;padding:7px 10px}button:hover{background:#f1e9df}button:disabled{opacity:.3;cursor:default}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--orange);outline-offset:2px}.primary{background:#f7e7d7;color:#a64e14}.spacer{flex:1}.subtle{color:#93897e;font-size:12px}.row{position:relative;display:flex;align-items:center;gap:9px;min-height:40px;padding:2px 8px 2px calc(8px + var(--depth)*27px);border-bottom:1px solid var(--line);background:#fffdf9}.row:first-child{border-top:1px solid var(--line)}.row:focus-within{background:#fff7ed}.handle{cursor:grab;color:#b5a99b;padding:5px 2px;touch-action:none}.handle:active{cursor:grabbing}.status{flex:none;width:20px;height:20px;border:2px solid var(--orange);border-radius:50%;padding:0;position:relative}.status:hover{background-color:#ffecd9}.status.doing{background:linear-gradient(90deg,var(--orange) 50%,transparent 50%)}.status.done{background:var(--orange);color:white}.status.done:after{content:'✓';position:absolute;inset:-2px;font-size:14px;line-height:20px;text-align:center}.status:disabled{opacity:1}.name{border:0;background:transparent;font:inherit;font-size:14px;color:inherit;min-width:20px;flex:1;padding:5px 0;outline:none!important}.row.completed .name{color:#a99d90}.time{width:calc(3ch + 6px);border:1px solid transparent;background:transparent;text-align:right;font:inherit;font-size:13px;color:#8a7765;padding:6px 4px;font-variant-numeric:tabular-nums}.time:hover,.time:focus{border-color:var(--line);background:white;border-radius:4px}.sum{font-size:13px;color:#8a7765;min-width:0;white-space:nowrap;flex-shrink:0;text-align:right;font-variant-numeric:tabular-nums}.unit{font-size:11px;color:#aa9b8a}.actions{display:flex;gap:0;opacity:0}.row:hover .actions,.row:focus-within .actions{opacity:1}.actions button{padding:5px;color:#a49280;font-size:14px}.row.drop-before:before,.row.drop-after:after{content:'';position:absolute;left:calc(8px + var(--depth)*27px);right:8px;height:2px;background:var(--orange);z-index:2}.row.drop-before:before{top:-1px}.row.drop-after:after{bottom:-1px}.row.drop-child{background:#ffead3;box-shadow:inset 3px 0 var(--orange)}.row.dragging{opacity:.35}footer{margin-top:20px;display:flex;gap:20px;align-items:center;color:#a59788;font-size:11px}.notice{color:#a14c1e;font-size:12px;margin:12px 0}.empty{padding:50px;text-align:center;color:#a59788;font-size:13px}input[type=file]{display:none}details{margin-left:auto}summary{cursor:pointer}details p{line-height:2;max-width:380px} @media(max-width:600px){main{padding:0 12px}.row{gap:6px;padding-left:calc(4px + var(--depth)*17px)}.actions{opacity:1}.actions button{font-size:12px;padding:4px}.tools{flex-wrap:wrap}footer{align-items:flex-start}.subtle{font-size:11px}}
+:root{font-family:Inter,"Noto Sans JP",system-ui,sans-serif;color:#39342f;background:#fcfaf7;--orange:#e78032;--line:#ede5db}*{box-sizing:border-box}body{margin:0}main{max-width:620px;margin:14px auto;padding:0 28px}header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.total{display:flex;align-items:baseline;gap:6px;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}.total small{font-size:11px;color:#998e81;font-weight:400}.tools{display:flex;align-items:center;gap:7px;margin-bottom:16px}button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit;border-radius:6px;padding:7px 10px}button:hover{background:#f1e9df}button:disabled{opacity:.3;cursor:default}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--orange);outline-offset:2px}.primary{background:#f7e7d7;color:#a64e14}.spacer{flex:1}.subtle{color:#93897e;font-size:12px}.row{position:relative;display:flex;align-items:center;gap:9px;min-height:40px;padding:2px 8px 2px calc(8px + var(--depth)*27px);border-bottom:1px solid var(--line);background:#fffdf9}.row:first-child{border-top:1px solid var(--line)}.row:focus-within{background:#fff7ed}.handle{cursor:grab;color:#b5a99b;padding:5px 2px;touch-action:none}.handle:active{cursor:grabbing}.status{flex:none;width:20px;height:20px;border:2px solid var(--orange);border-radius:50%;padding:0;position:relative}.status:hover{background-color:#ffecd9}.status.doing{background:linear-gradient(90deg,var(--orange) 50%,transparent 50%)}.status.done{background:var(--orange);color:white}.status.done:after{content:'✓';position:absolute;inset:-2px;font-size:14px;line-height:20px;text-align:center}.status:disabled{opacity:1}.name{border:0;background:transparent;font:inherit;font-size:14px;color:inherit;min-width:20px;flex:1;padding:5px 0;outline:none!important}.row.completed .name{color:#a99d90}.time{width:calc(3ch + 6px);border:1px solid transparent;background:transparent;text-align:right;font:inherit;font-size:13px;color:#8a7765;padding:6px 4px;font-variant-numeric:tabular-nums}.time:hover,.time:focus{border-color:var(--line);background:white;border-radius:4px}.sum{font-size:13px;color:#8a7765;min-width:0;white-space:nowrap;flex-shrink:0;text-align:right;font-variant-numeric:tabular-nums}.unit{font-size:11px;color:#aa9b8a}.actions{display:flex;gap:0;opacity:0}.row:hover .actions,.row:focus-within .actions{opacity:1}.actions button{padding:5px;color:#a49280;font-size:14px}.row.drop-before:before,.row.drop-after:after{content:'';position:absolute;left:calc(8px + var(--depth)*27px);right:8px;height:2px;background:var(--orange);z-index:2;pointer-events:none}.row.drop-before:before{top:-1px}.row.drop-after:after{bottom:-1px}.row.drop-child{background:#ffead3;box-shadow:inset 3px 0 var(--orange)}.row.dragging{opacity:.35}footer{margin-top:20px;display:flex;gap:20px;align-items:center;color:#a59788;font-size:11px}.notice{color:#a14c1e;font-size:12px;margin:12px 0}.empty{padding:50px;text-align:center;color:#a59788;font-size:13px}input[type=file]{display:none}details{margin-left:auto}summary{cursor:pointer}details p{line-height:2;max-width:380px} @media(max-width:600px){main{padding:0 12px}.row{gap:6px;padding-left:calc(4px + var(--depth)*17px)}.actions{opacity:1}.actions button{font-size:12px;padding:4px}.tools{flex-wrap:wrap}footer{align-items:flex-start}.subtle{font-size:11px}}
 .draft{min-height:40px;padding:2px 8px 2px 50px;border-bottom:1px solid var(--line)}.draft input{width:100%;border:0;background:transparent;font:inherit;font-size:14px;padding:9px 0;color:inherit;outline:none}.draft input::placeholder,.name::placeholder{color:#b6a999;opacity:1}.row.drop-before:before,.row.drop-after:after{left:calc(8px + var(--drop-depth,0)*27px)}.draft.drop-end{box-shadow:inset 0 2px var(--orange)}@media(max-width:600px){.row.drop-before:before,.row.drop-after:after{left:calc(4px + var(--drop-depth,0)*17px)}}
 .row .time{margin-right:-8px;padding-right:0;appearance:textfield;-moz-appearance:textfield}.time::-webkit-inner-spin-button,.time::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}@media(max-width:600px){.row .time{margin-right:-5px}}
 .name{resize:none;overflow:hidden;line-height:1.6;overflow-wrap:anywhere;white-space:pre-wrap;box-sizing:border-box}.row{align-items:flex-start}.handle,.status,.time,.sum,.unit,.actions{align-self:flex-start}.status{margin-top:7px}.handle{margin-top:3px}.time,.sum{margin-top:3px}.unit{margin-top:10px}.actions{margin-top:3px}
@@ -163,7 +163,7 @@ if(!leaf){
 }
 if(leaf){const input=document.createElement('input');input.type='number';input.min='0';input.max='10000000';input.step='1';input.className='time';input.value=n.minutes??'';input.placeholder='0';input.setAttribute('aria-label',`${n.title||'タスク'}の所要時間（分）`);input.onchange=()=>{const value=input.value===''?null:Number(input.value);if(value!==null&&(!Number.isSafeInteger(value)||value<0||value>10000000)){input.value=n.minutes??'';return;}mutate(()=>n.minutes=value);};const unit=document.createElement('span');unit.className='unit';unit.textContent='分';const duration=document.createElement('span');duration.className='duration';duration.append(input,unit);row.append(duration);}else{const sum=document.createElement('span');sum.className='sum';sum.textContent=format(a.minutes);sum.title='配下の葉の合計';row.append(sum);}
 const actions=document.createElement('span');actions.className='actions';for(const[label,title,fn]of[['×','子孫ごと削除',()=>remove(n.id)]]){const b=document.createElement('button');b.textContent=label;b.title=title;b.setAttribute('aria-label',title);b.onclick=fn;actions.append(b);}row.append(actions);
-row.addEventListener('dragover',e=>{
+function previewDrop(e){
   if(!dragId)return;
   clearIndicators();
   const plan=dropAt(root,row,e);
@@ -179,7 +179,9 @@ row.addEventListener('dragover',e=>{
   marker.classList.add(plan.mode==='before'?'drop-before':'drop-after');
   marker.style.setProperty('--drop-depth',plan.depth);
   e.dataTransfer.dropEffect='move';
-});
+}
+row.addEventListener('dragenter',previewDrop);
+row.addEventListener('dragover',previewDrop);
 row.addEventListener('drop',e=>{
   if(!dragId)return;
   e.preventDefault();
@@ -188,10 +190,12 @@ row.addEventListener('drop',e=>{
   if(plan)move(dragId,plan.target,plan.mode);
   clearDrag();
 });
-row.addEventListener('dragleave',e=>{if(!row.contains(e.relatedTarget))clearIndicators();});
 root.append(row);resizeName(name);n.children.forEach(c=>draw(c,depth+1));}
 nodes.forEach(n=>draw(n,0));updateFolding();}
 window.addEventListener('resize',()=>document.querySelectorAll('.row:not([hidden]) textarea.name').forEach(resizeName));
+$('tree').addEventListener('dragleave',e=>{
+  if(dragId&&!e.currentTarget.contains(e.relatedTarget)&&!$('draft-row').contains(e.relatedTarget))clearIndicators();
+});
 
 function clearIndicators(){document.querySelectorAll('.drop-before,.drop-after,.drop-child,.drop-end').forEach(x=>x.classList.remove('drop-before','drop-after','drop-child','drop-end'));}
 function dropAt(root,row,event){
@@ -222,8 +226,16 @@ function dropPlan(source,target,after,desired){
   let mode=after?'after':'before';
   let depth=target.depth;
   if(after&&desired>depth){
-    mode='child';
     depth++;
+    // 展開中の親と最初の子の間では、子リストの先頭が挿入先になる。
+    const firstChild=folded.has(target.node.id)?null:
+      target.node.children.find(child=>child.id!==source.node.id);
+    if(firstChild){
+      target=locate(firstChild.id);
+      mode='before';
+    }else{
+      mode='child';
+    }
   }else{
     // 子の行を指したまま浅い階層へ移す場合は、親の枝の末尾へ置く。
     while(target.depth>desired){
@@ -240,8 +252,18 @@ function validate(data){if(!Array.isArray(data))throw Error('形式が違いま�
 function commitDraft(focus=false){const input=$('draft');if(!input.value.trim())return;const n=makeNode();n.title=input.value;input.value='';mutate(()=>nodes.push(n));if(focus)input.focus();}
 $('draft').addEventListener('change',()=>commitDraft());
 $('draft').addEventListener('keydown',e=>{if(!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&e.key==='ArrowUp'){if(document.querySelector('#tree .row:not([hidden]) .name')||e.target.value.trim()){e.preventDefault();e.target.blur();const fields=[...document.querySelectorAll('#tree .row:not([hidden]) .name')];const last=fields.at(-1);last.focus();last.setSelectionRange(last.value.length,last.value.length);}return;}if(e.key==='Enter'&&!e.isComposing){e.preventDefault();commitDraft(true);}});
-$('draft-row').addEventListener('dragover',e=>{if(!dragId)return;e.preventDefault();clearIndicators();$('draft-row').classList.add('drop-end');});
-$('draft-row').addEventListener('dragleave',()=> $('draft-row').classList.remove('drop-end'));
+function previewEndDrop(e){
+  if(!dragId)return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  clearIndicators();
+  e.currentTarget.classList.add('drop-end');
+}
+$('draft-row').addEventListener('dragenter',previewEndDrop);
+$('draft-row').addEventListener('dragover',previewEndDrop);
+$('draft-row').addEventListener('dragleave',e=>{
+  if(!e.currentTarget.contains(e.relatedTarget))e.currentTarget.classList.remove('drop-end');
+});
 $('draft-row').addEventListener('drop',e=>{if(!dragId)return;e.preventDefault();const source=locate(dragId);if(source)relocate(source,nodes,nodes.length,0,null);clearDrag();});
 
 document.addEventListener('keydown',e=>{if(e.isComposing||!(e.ctrlKey||e.metaKey))return;const key=e.key.toLowerCase();if(key!=='z'&&key!=='y')return;if(e.target===$('draft'))return;e.preventDefault();const active=e.target;active.blur?.();if(key==='y'||e.shiftKey)travel(future,past);else travel(past,future);if(active.classList?.contains('name'))focusName(active.closest('.row').dataset.id);});
