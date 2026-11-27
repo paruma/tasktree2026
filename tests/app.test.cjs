@@ -29,6 +29,8 @@ function app(options = {}) {
     }
     addEventListener(name, handler) { this.events[name] = handler; }
     focus() {}
+    blur() {}
+    getBoundingClientRect() { return { left: 0 }; }
   }
   const elements = {};
   let saved;
@@ -118,6 +120,32 @@ test('通常版は既存タスクの子を開閉し、保存データと集計�
     assert.equal(handle.attributes['aria-expanded'], 'true');
     assert.equal(child.hidden, false);
   }
+});
+
+test('末尾のタスクを末尾にドロップしても履歴は増えない', () => {
+  const { api, elements } = app();
+  api.add({ title: '先頭' });
+  api.add({ title: '末尾' });
+  const handle = elements.tree.children[1].querySelector('.handle');
+  handle.events.dragstart({ clientX: 0, dataTransfer: { setData() {} } });
+  elements['draft-row'].events.drop({ preventDefault() {} });
+  api.undo();
+  assert.deepEqual(Array.from(api.get(), task => task.title), ['先頭']);
+});
+
+test('Tab で階層の上限を超える移動は保存しない', () => {
+  const { api, elements, saved } = app();
+  const node = (id, children = []) => ({ id, title: id, minutes: 1, state: 0, children });
+  let branch = node('level-50');
+  for (let level = 49; level >= 1; level--) branch = node(`level-${level}`, [branch]);
+  const tree = [node('target'), branch];
+  api.replace(tree);
+  elements.tree.children[1].querySelector('.name').events.keydown({
+    key: 'Tab', preventDefault() {},
+  });
+  assert.equal(JSON.stringify(api.get()), JSON.stringify(tree));
+  assert.equal(saved(), JSON.stringify(tree));
+  assert.match(elements.notice.textContent, /階層が深すぎ/);
 });
 
 test('不正入力・循環・不正な挿入先は既存データを変更しない', () => {
