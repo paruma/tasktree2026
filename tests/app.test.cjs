@@ -17,12 +17,16 @@ function app(options = {}) {
       this.dataset = {};
       this.classList = { add() {}, remove() {} };
       this.events = {};
+      this.attributes = {};
       this.value = '';
       this.scrollHeight = 32;
     }
     append(...items) { this.children.push(...items); }
     replaceChildren() { this.children = []; }
-    setAttribute() {}
+    setAttribute(name, value) { this.attributes[name] = value; }
+    querySelector(selector) {
+      return this.children.find(child => child.className?.split(' ').includes(selector.slice(1))) ?? null;
+    }
     addEventListener(name, handler) { this.events[name] = handler; }
     focus() {}
   }
@@ -54,13 +58,13 @@ function app(options = {}) {
     },
     crypto: webcrypto,
     localStorage: {
-      getItem() { return null; },
+      getItem(key) { return key === 'tasktree2026.v1' ? options.saved ?? null : null; },
       setItem(key, value) { if (failSave) throw Error('QuotaExceededError'); saved = value; },
     },
   };
   vm.createContext(context);
   vm.runInContext(script, context);
-  context.taskTree.replace([]);
+  if (options.saved === undefined) context.taskTree.replace([]);
   return { api: context.taskTree, elements, context, saved: () => saved, failSave: value => { failSave = value; }, channel: () => channel, replies };
 }
 
@@ -90,6 +94,30 @@ test('初期値・部分木の移動・集計・取り消し・保存', () => {
   api.redo();
   assert.equal(api.get().length, 2);
   assert.equal(JSON.parse(saved()).length, 2);
+});
+
+test('通常版は既存タスクの子を開閉し、保存データと集計を保つ', () => {
+  const saved = JSON.stringify([{
+    id: 'parent', title: '親', minutes: null, state: 0, children: [{
+      id: 'child', title: '子', minutes: 15, state: 0, children: [],
+    }],
+  }]);
+  for (const desktop of [false, true]) {
+    const { api, elements, saved: savedAfter } = app({ desktop, saved });
+    const [parent, child] = elements.tree.children;
+    const handle = parent.querySelector('.handle');
+    assert.equal(handle.tag, 'button');
+    assert.equal(handle.attributes['aria-expanded'], 'true');
+    handle.onclick();
+    assert.equal(handle.attributes['aria-expanded'], 'false');
+    assert.equal(child.hidden, true);
+    assert.equal(elements.total.textContent, '15分');
+    assert.equal(JSON.stringify(api.get()), saved);
+    assert.equal(savedAfter(), undefined);
+    handle.onclick();
+    assert.equal(handle.attributes['aria-expanded'], 'true');
+    assert.equal(child.hidden, false);
+  }
 });
 
 test('不正入力・循環・不正な挿入先は既存データを変更しない', () => {
