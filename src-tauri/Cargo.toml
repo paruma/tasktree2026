@@ -1,6 +1,6 @@
 [package]
 name = "tasktree"
-version = "0.1.1"
+version = "0.1.2"
 description = "木構造で進捗と所要時間を管理するタスクツリー"
 edition = "2021"
 publish = false
